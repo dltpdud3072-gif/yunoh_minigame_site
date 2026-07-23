@@ -1,85 +1,139 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>30초 따귀 챌린지</title>
 
 <style>
+
+*{
+    box-sizing:border-box;
+}
+
 body{
     background:#ffe5e5;
     text-align:center;
     font-family:sans-serif;
+    margin:0;
+    padding:10px;
     user-select:none;
+    overflow-x:hidden;
 }
+
 
 h1{
     color:#b00000;
+    font-size:clamp(24px,6vw,50px);
 }
+
 
 #best{
-    font-size:25px;
+    font-size:clamp(18px,5vw,30px);
 }
 
+
 #timer{
-    font-size:35px;
+    font-size:clamp(25px,7vw,45px);
     color:#0066cc;
 }
 
+
 #character{
-    font-size:130px;
-    margin:20px;
+    font-size:clamp(80px,30vw,180px);
+    margin:10px;
 }
+
 
 #effect{
     height:50px;
-    font-size:35px;
+    font-size:clamp(25px,8vw,45px);
     color:red;
 }
 
+
 button{
-    font-size:30px;
-    padding:15px 40px;
+
+    width:min(85vw,400px);
+    height:clamp(60px,12vw,90px);
+
     margin:10px;
+
+    font-size:clamp(22px,6vw,35px);
+
     border:0;
     border-radius:20px;
+
     background:#ff4444;
     color:white;
+
 }
+
 
 button:active{
     transform:scale(.9);
 }
 
+
 .shake{
+
     animation:shake .15s;
+
 }
 
+
 @keyframes shake{
-    0%{transform:translateX(0)}
-    25%{transform:translateX(-20px)}
-    50%{transform:translateX(20px)}
-    75%{transform:translateX(-20px)}
-    100%{transform:translateX(0)}
+
+0%{
+transform:translateX(0);
 }
+
+25%{
+transform:translateX(-20px);
+}
+
+50%{
+transform:translateX(20px);
+}
+
+75%{
+transform:translateX(-20px);
+}
+
+100%{
+transform:translateX(0);
+}
+
+}
+
 </style>
+
 </head>
 
 
 <body>
 
+
 <h1>👋 30초 따귀 챌린지</h1>
+
 
 <div id="best">
 🏆 최고 기록:
 <span id="bestScore">0</span>점
 </div>
 
+
 <div id="timer">
-⏸ 게임 시작을 눌러주세요
+⏸ 게임 시작
 </div>
 
 
-<div id="character">😐</div>
+<div id="character">
+😐
+</div>
+
 
 <div id="effect"></div>
 
@@ -88,11 +142,14 @@ button:active{
 게임 시작
 </button>
 
+
 <br>
+
 
 <button id="slapButton">
 👋 따귀 때리기
 </button>
+
 
 
 <h2>
@@ -100,13 +157,16 @@ button:active{
 <span id="score">0</span>
 </h2>
 
+
 <h2>
 🔥 콤보:
 <span id="combo">0</span>
 </h2>
 
 
+
 <script>
+
 
 let score=0;
 let combo=0;
@@ -119,14 +179,12 @@ let ready=false;
 let timer;
 
 
-let keyDown=false;
-let mouseDown=false;
-
+let pressed=false;
 
 let audioCtx=null;
 
 
-let best=localStorage.getItem("bestSlap") || 0;
+let best=localStorage.getItem("bestSlap")||0;
 
 document.getElementById("bestScore").innerText=best;
 
@@ -134,50 +192,53 @@ document.getElementById("bestScore").innerText=best;
 
 function startGame(){
 
-    score=0;
-    combo=0;
-    time=30;
+score=0;
+combo=0;
+time=30;
 
-    playing=true;
-    ready=true;
-
-
-    document.getElementById("score").innerText=0;
-    document.getElementById("combo").innerText=0;
+playing=true;
+ready=true;
 
 
-    document.getElementById("timer").innerText=
-    "⏸ 준비 완료! 첫 따귀를 누르세요";
+document.getElementById("score").innerText=0;
+document.getElementById("combo").innerText=0;
 
 
-    clearInterval(timer);
+document.getElementById("timer").innerText=
+"⏸ 첫 따귀를 누르세요";
+
+
+clearInterval(timer);
+
 }
-
 
 
 
 
 function startTimer(){
 
-    timer=setInterval(()=>{
 
-        time--;
-
-
-        document.getElementById("timer").innerText=
-        "⏱ 남은 시간: "+time+"초";
+timer=setInterval(()=>{
 
 
-        if(time<=0){
+time--;
 
-            endGame();
 
-        }
+document.getElementById("timer").innerText=
+"⏱ "+time+"초";
 
-    },1000);
+
+if(time<=0){
+
+endGame();
 
 }
 
+
+},1000);
+
+
+}
 
 
 
@@ -185,209 +246,211 @@ function startTimer(){
 function slap(){
 
 
-    if(!playing) return;
+if(!playing)return;
 
 
 
-    if(!audioCtx){
+if(!audioCtx){
 
-        audioCtx=new AudioContext();
+audioCtx=new AudioContext();
 
-    }
-
-
-    if(audioCtx.state==="suspended"){
-
-        audioCtx.resume();
-
-    }
+}
 
 
+if(audioCtx.state==="suspended"){
 
-    if(ready){
+audioCtx.resume();
 
-        ready=false;
-
-        startTimer();
-
-    }
+}
 
 
 
-    score++;
-    combo++;
+if(ready){
+
+ready=false;
+
+startTimer();
+
+}
 
 
 
-    if(combo%10===0){
-
-        score+=5;
-
-    }
+score++;
+combo++;
 
 
+if(combo%10===0){
 
-    document.getElementById("score").innerText=score;
-    document.getElementById("combo").innerText=combo;
+score+=5;
 
-
-
-    let face=document.getElementById("character");
-    let effect=document.getElementById("effect");
+}
 
 
 
-    face.innerText="😵";
+document.getElementById("score").innerText=score;
 
-
-    face.classList.remove("shake");
-    void face.offsetWidth;
-    face.classList.add("shake");
+document.getElementById("combo").innerText=combo;
 
 
 
-    effect.innerText=
-    combo%10===0 ?
-    "🔥 "+combo+" 콤보!" :
-    "👋 찰싹!";
+let face=document.getElementById("character");
+
+let effect=document.getElementById("effect");
 
 
 
-    playSlapSound();
+face.innerText="😵";
+
+
+face.classList.remove("shake");
+
+void face.offsetWidth;
+
+face.classList.add("shake");
 
 
 
-    setTimeout(()=>{
+effect.innerText=
+combo%10===0?
+"🔥 콤보!":
+"👋 찰싹!";
 
-        face.innerText="😐";
-        effect.innerText="";
 
-    },150);
+sound();
+
+
+
+setTimeout(()=>{
+
+face.innerText="😐";
+
+effect.innerText="";
+
+},150);
+
+
 
 }
 
 
 
 
-
-function playSlapSound(){
-
-    let buffer=audioCtx.createBuffer(
-        1,
-        audioCtx.sampleRate*0.08,
-        audioCtx.sampleRate
-    );
+function sound(){
 
 
-    let data=buffer.getChannelData(0);
-
-
-    for(let i=0;i<data.length;i++){
-
-        data[i]=(Math.random()*2-1)
-        *(1-i/data.length);
-
-    }
+let buffer=
+audioCtx.createBuffer(
+1,
+audioCtx.sampleRate*0.08,
+audioCtx.sampleRate
+);
 
 
 
-    let source=audioCtx.createBufferSource();
-
-    let filter=audioCtx.createBiquadFilter();
-
-    let gain=audioCtx.createGain();
+let data=buffer.getChannelData(0);
 
 
 
-    source.buffer=buffer;
+for(let i=0;i<data.length;i++){
 
-    filter.type="highpass";
-    filter.frequency.value=900;
+data[i]=(Math.random()*2-1)
+*(1-i/data.length);
 
-    gain.gain.value=.7;
-
-
-
-    source
-    .connect(filter)
-    .connect(gain)
-    .connect(audioCtx.destination);
+}
 
 
 
-    source.start();
+let source=
+audioCtx.createBufferSource();
+
+
+let gain=
+audioCtx.createGain();
+
+
+
+source.buffer=buffer;
+
+gain.gain.value=.5;
+
+
+source.connect(gain);
+
+gain.connect(audioCtx.destination);
+
+
+source.start();
+
 
 }
 
 
 
 
+// 터치/마우스 꾹 방지
 
-// 마우스 (꾹 누르기 방지)
-
-let slapButton=document.getElementById("slapButton");
-
-
-slapButton.addEventListener("mousedown",()=>{
-
-    if(mouseDown) return;
-
-    mouseDown=true;
-
-    slap();
-
-});
+let btn=document.getElementById("slapButton");
 
 
-document.addEventListener("mouseup",()=>{
+btn.addEventListener("pointerdown",()=>{
 
-    mouseDown=false;
+if(pressed)return;
+
+pressed=true;
+
+slap();
 
 });
 
 
+document.addEventListener("pointerup",()=>{
 
-
-
-// 키보드 (꾹 누르기 방지)
-
-document.addEventListener("keydown",function(e){
-
-    if(keyDown) return;
-
-
-    if(
-        e.key===" " ||
-        e.key==="Enter" ||
-        e.key==="Tab"
-    ){
-
-        e.preventDefault();
-
-        keyDown=true;
-
-        slap();
-
-    }
+pressed=false;
 
 });
 
 
 
-document.addEventListener("keyup",function(e){
+// 키보드
 
-    if(
-        e.key===" " ||
-        e.key==="Enter" ||
-        e.key==="Tab"
-    ){
+document.addEventListener("keydown",e=>{
 
-        keyDown=false;
 
-    }
+if(pressed)return;
+
+
+if(
+e.key===" "||
+e.key==="Enter"||
+e.key==="Tab"
+){
+
+e.preventDefault();
+
+pressed=true;
+
+slap();
+
+}
+
 
 });
 
+
+document.addEventListener("keyup",e=>{
+
+
+if(
+e.key===" "||
+e.key==="Enter"||
+e.key==="Tab"
+){
+
+pressed=false;
+
+}
+
+});
 
 
 
@@ -395,45 +458,46 @@ document.addEventListener("keyup",function(e){
 
 function endGame(){
 
-    playing=false;
-    ready=false;
+
+playing=false;
+ready=false;
 
 
-    clearInterval(timer);
-
-
-
-    if(score>best){
-
-        best=score;
-
-
-        localStorage.setItem(
-            "bestSlap",
-            best
-        );
-
-
-        document.getElementById("bestScore").innerText=best;
-
-    }
+clearInterval(timer);
 
 
 
-    document.getElementById("timer").innerText=
-    "⏰ 종료!";
+if(score>best){
+
+best=score;
 
 
-    alert(
-    "게임 종료!\n\n점수: "
-    +score+
-    "점"
-    );
+localStorage.setItem(
+"bestSlap",
+best
+);
+
+
+document.getElementById("bestScore").innerText=best;
+
+}
+
+
+
+document.getElementById("timer").innerText=
+"⏰ 종료";
+
+
+alert(
+"게임 끝!\n점수: "+score+"점"
+);
+
 
 }
 
 
 </script>
+
 
 </body>
 </html>
