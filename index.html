@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>30초 따귀 챌린지</title>
+
+<style>
+body{
+    background:#ffe5e5;
+    text-align:center;
+    font-family:sans-serif;
+    user-select:none;
+}
+
+h1{
+    color:#b00000;
+}
+
+#best{
+    font-size:25px;
+}
+
+#timer{
+    font-size:35px;
+    color:#0066cc;
+}
+
+#character{
+    font-size:130px;
+    margin:20px;
+}
+
+#effect{
+    height:50px;
+    font-size:35px;
+    color:red;
+}
+
+button{
+    font-size:30px;
+    padding:15px 40px;
+    margin:10px;
+    border:0;
+    border-radius:20px;
+    background:#ff4444;
+    color:white;
+}
+
+button:active{
+    transform:scale(.9);
+}
+
+.shake{
+    animation:shake .15s;
+}
+
+@keyframes shake{
+    0%{transform:translateX(0)}
+    25%{transform:translateX(-20px)}
+    50%{transform:translateX(20px)}
+    75%{transform:translateX(-20px)}
+    100%{transform:translateX(0)}
+}
+</style>
+</head>
+
+
+<body>
+
+<h1>👋 30초 따귀 챌린지</h1>
+
+<div id="best">
+🏆 최고 기록:
+<span id="bestScore">0</span>점
+</div>
+
+<div id="timer">
+⏸ 게임 시작을 눌러주세요
+</div>
+
+
+<div id="character">😐</div>
+
+<div id="effect"></div>
+
+
+<button onclick="startGame()">
+게임 시작
+</button>
+
+<br>
+
+<button id="slapButton">
+👋 따귀 때리기
+</button>
+
+
+<h2>
+점수:
+<span id="score">0</span>
+</h2>
+
+<h2>
+🔥 콤보:
+<span id="combo">0</span>
+</h2>
+
+
+<script>
+
+let score=0;
+let combo=0;
+
+let time=30;
+
+let playing=false;
+let ready=false;
+
+let timer;
+
+
+let keyDown=false;
+let mouseDown=false;
+
+
+let audioCtx=null;
+
+
+let best=localStorage.getItem("bestSlap") || 0;
+
+document.getElementById("bestScore").innerText=best;
+
+
+
+function startGame(){
+
+    score=0;
+    combo=0;
+    time=30;
+
+    playing=true;
+    ready=true;
+
+
+    document.getElementById("score").innerText=0;
+    document.getElementById("combo").innerText=0;
+
+
+    document.getElementById("timer").innerText=
+    "⏸ 준비 완료! 첫 따귀를 누르세요";
+
+
+    clearInterval(timer);
+}
+
+
+
+
+
+function startTimer(){
+
+    timer=setInterval(()=>{
+
+        time--;
+
+
+        document.getElementById("timer").innerText=
+        "⏱ 남은 시간: "+time+"초";
+
+
+        if(time<=0){
+
+            endGame();
+
+        }
+
+    },1000);
+
+}
+
+
+
+
+
+function slap(){
+
+
+    if(!playing) return;
+
+
+
+    if(!audioCtx){
+
+        audioCtx=new AudioContext();
+
+    }
+
+
+    if(audioCtx.state==="suspended"){
+
+        audioCtx.resume();
+
+    }
+
+
+
+    if(ready){
+
+        ready=false;
+
+        startTimer();
+
+    }
+
+
+
+    score++;
+    combo++;
+
+
+
+    if(combo%10===0){
+
+        score+=5;
+
+    }
+
+
+
+    document.getElementById("score").innerText=score;
+    document.getElementById("combo").innerText=combo;
+
+
+
+    let face=document.getElementById("character");
+    let effect=document.getElementById("effect");
+
+
+
+    face.innerText="😵";
+
+
+    face.classList.remove("shake");
+    void face.offsetWidth;
+    face.classList.add("shake");
+
+
+
+    effect.innerText=
+    combo%10===0 ?
+    "🔥 "+combo+" 콤보!" :
+    "👋 찰싹!";
+
+
+
+    playSlapSound();
+
+
+
+    setTimeout(()=>{
+
+        face.innerText="😐";
+        effect.innerText="";
+
+    },150);
+
+}
+
+
+
+
+
+function playSlapSound(){
+
+    let buffer=audioCtx.createBuffer(
+        1,
+        audioCtx.sampleRate*0.08,
+        audioCtx.sampleRate
+    );
+
+
+    let data=buffer.getChannelData(0);
+
+
+    for(let i=0;i<data.length;i++){
+
+        data[i]=(Math.random()*2-1)
+        *(1-i/data.length);
+
+    }
+
+
+
+    let source=audioCtx.createBufferSource();
+
+    let filter=audioCtx.createBiquadFilter();
+
+    let gain=audioCtx.createGain();
+
+
+
+    source.buffer=buffer;
+
+    filter.type="highpass";
+    filter.frequency.value=900;
+
+    gain.gain.value=.7;
+
+
+
+    source
+    .connect(filter)
+    .connect(gain)
+    .connect(audioCtx.destination);
+
+
+
+    source.start();
+
+}
+
+
+
+
+
+// 마우스 (꾹 누르기 방지)
+
+let slapButton=document.getElementById("slapButton");
+
+
+slapButton.addEventListener("mousedown",()=>{
+
+    if(mouseDown) return;
+
+    mouseDown=true;
+
+    slap();
+
+});
+
+
+document.addEventListener("mouseup",()=>{
+
+    mouseDown=false;
+
+});
+
+
+
+
+
+// 키보드 (꾹 누르기 방지)
+
+document.addEventListener("keydown",function(e){
+
+    if(keyDown) return;
+
+
+    if(
+        e.key===" " ||
+        e.key==="Enter" ||
+        e.key==="Tab"
+    ){
+
+        e.preventDefault();
+
+        keyDown=true;
+
+        slap();
+
+    }
+
+});
+
+
+
+document.addEventListener("keyup",function(e){
+
+    if(
+        e.key===" " ||
+        e.key==="Enter" ||
+        e.key==="Tab"
+    ){
+
+        keyDown=false;
+
+    }
+
+});
+
+
+
+
+
+
+function endGame(){
+
+    playing=false;
+    ready=false;
+
+
+    clearInterval(timer);
+
+
+
+    if(score>best){
+
+        best=score;
+
+
+        localStorage.setItem(
+            "bestSlap",
+            best
+        );
+
+
+        document.getElementById("bestScore").innerText=best;
+
+    }
+
+
+
+    document.getElementById("timer").innerText=
+    "⏰ 종료!";
+
+
+    alert(
+    "게임 종료!\n\n점수: "
+    +score+
+    "점"
+    );
+
+}
+
+
+</script>
+
+</body>
+</html>
