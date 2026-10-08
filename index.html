@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -166,7 +166,13 @@ transform:translateX(0);
 
 
 <script>
+const SUPABASE_URL = "https://vgnsmweqklxlwbzipknv.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_LFUFgr0wXmGipUiJOLcmCQ_W0pLOyEm";
 
+const supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
 
 let score=0;
 let combo=0;
@@ -456,31 +462,30 @@ pressed=false;
 
 
 
-function endGame(){
+async function endGame() {
+  playing = false;
+  ready = false;
+  clearInterval(timer);
 
-
-playing=false;
-ready=false;
-
-
-clearInterval(timer);
-
-
-
-if(score>best){
-
-best=score;
-
-
-localStorage.setItem(
-"bestSlap",
-best
-);
-
-
-document.getElementById("bestScore").innerText=best;
-
+  if (score > best) {
+    best = score;
+    
+    // [기존 기능] 내 컴퓨터에 저장하고 화면에 점수 보여주기 (유지)
+    localStorage.setItem("bestSlap", best);
+    document.getElementById("bestScore").innerText = best;
+    
+    // [새 기능] 이름 입력받아서 인터넷(Supabase)에 저장하기 (추가)
+    const playerName = prompt("최고 기록 달성! 이름을 적어주세요:", "플레이어");
+    if (playerName) {
+      await supabase
+        .from('leaderboard')
+        .insert([{ name: playerName, score: best }]);
+        
+      alert("인터넷 랭킹 등록 완료!");
+    }
+  }
 }
+
 
 
 
