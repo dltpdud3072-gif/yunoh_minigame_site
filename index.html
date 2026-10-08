@@ -504,7 +504,7 @@ rankBox.innerHTML = `
 `;
 document.body.appendChild(rankBox);
 
-
+// 1. 진짜 내 Supabase 주소와 키값 설정
 const SUPABASE_URL = "https://supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_LFUFgr0wXmGipUiJOLcmCQ_W0pLOyEm";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -535,6 +535,7 @@ async function loadLeaderboard() {
 
 // 3. 게임이 켜지자마자 순위표를 실행합니다
 loadLeaderboard();
+
 
 
 
