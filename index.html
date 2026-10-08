@@ -117,10 +117,10 @@ button:active{
 </h2>
 
 <script>
-// 1. Supabase 설정 (필요에 따라 본인 정보로 수정하세요)
+// 1. Supabase 설정 (변수명을 supabaseClient로 변경하여 충돌 방지)
 const SUPABASE_URL = "https://supabase.co"; 
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_LFUFgr0wXmGipUiJOLcmCQ_W0pLOyEm"; 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 let score = 0;
 let combo = 0;
@@ -151,7 +151,7 @@ document.body.appendChild(rankBox);
 // 랭킹 데이터 불러오기 함수
 async function loadLeaderboard() {
   const rankingList = document.getElementById("ranking-list");
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('leaderboard')
     .select('name, score')
     .order('score', { ascending: false })
@@ -317,7 +317,7 @@ async function endGame() {
     
     const playerName = prompt("최고 기록 달성! 이름을 적어주세요:", "플레이어");
     if (playerName) {
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('leaderboard')
         .insert([{ name: playerName, score: best }]);
         
