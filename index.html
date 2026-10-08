@@ -1,19 +1,17 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<script src="https://unpkg.com"></script>
+<!-- Supabase CDN 추가 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 
 <title>30초 따귀 챌린지</title>
 
 <style>
-
 *{
     box-sizing:border-box;
 }
-
 body{
     background:#ffe5e5;
     text-align:center;
@@ -23,476 +21,110 @@ body{
     user-select:none;
     overflow-x:hidden;
 }
-
-
 h1{
     color:#b00000;
     font-size:clamp(24px,6vw,50px);
 }
-
-
 #best{
     font-size:clamp(18px,5vw,30px);
 }
-
-
 #timer{
     font-size:clamp(25px,7vw,45px);
     color:#0066cc;
 }
-
-
 #character{
     font-size:clamp(80px,30vw,180px);
     margin:10px;
 }
-
-
 #effect{
     height:50px;
     font-size:clamp(25px,8vw,45px);
     color:red;
 }
-
-
 button{
-
     width:min(85vw,400px);
     height:clamp(60px,12vw,90px);
-
     margin:10px;
-
     font-size:clamp(22px,6vw,35px);
-
     border:0;
     border-radius:20px;
-
     background:#ff4444;
     color:white;
-
 }
-
-
 button:active{
     transform:scale(.9);
 }
-
-
 .shake{
-
     animation:shake .15s;
-
 }
-
-
 @keyframes shake{
-
-0%{
-transform:translateX(0);
+  0%{transform:translateX(0);}
+  25%{transform:translateX(-20px);}
+  50%{transform:translateX(20px);}
+  75%{transform:translateX(-20px);}
+  100%{transform:translateX(0);}
 }
-
-25%{
-transform:translateX(-20px);
-}
-
-50%{
-transform:translateX(20px);
-}
-
-75%{
-transform:translateX(-20px);
-}
-
-100%{
-transform:translateX(0);
-}
-
-}
-
 </style>
-
 </head>
-
 
 <body>
 
-
 <h1>👋 30초 따귀 챌린지</h1>
-
 
 <div id="best">
 🏆 최고 기록:
 <span id="bestScore">0</span>점
 </div>
 
-
 <div id="timer">
 ⏸ 게임 시작
 </div>
-
 
 <div id="character">
 😐
 </div>
 
-
 <div id="effect"></div>
-
 
 <button onclick="startGame()">
 게임 시작
 </button>
 
-
 <br>
-
 
 <button id="slapButton">
 👋 따귀 때리기
 </button>
-
-
 
 <h2>
 점수:
 <span id="score">0</span>
 </h2>
 
-
 <h2>
 🔥 콤보:
 <span id="combo">0</span>
 </h2>
 
-
-
 <script>
+// 1. 진짜 내 Supabase 주소와 키값 설정
+const SUPABASE_URL = "https://supabase.co"; // 본인의 Supabase URL로 변경 필요
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_LFUFgr0wXmGipUiJOLcmCQ_W0pLOyEm"; // 본인의 Key로 변경 필요
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-
-let score=0;
-let combo=0;
-
-let time=30;
-
-let playing=false;
-let ready=false;
-
+let score = 0;
+let combo = 0;
+let time = 30;
+let playing = false;
+let ready = false;
 let timer;
+let pressed = false;
+let audioCtx = null;
 
+let best = localStorage.getItem("bestSlap") || 0;
+document.getElementById("bestScore").innerText = best;
 
-let pressed=false;
-
-let audioCtx=null;
-
-
-let best=localStorage.getItem("bestSlap")||0;
-
-document.getElementById("bestScore").innerText=best;
-
-
-
-function startGame(){
-
-score=0;
-combo=0;
-time=30;
-
-playing=true;
-ready=true;
-
-
-document.getElementById("score").innerText=0;
-document.getElementById("combo").innerText=0;
-
-
-document.getElementById("timer").innerText=
-"⏸ 첫 따귀를 누르세요";
-
-
-clearInterval(timer);
-
-}
-
-
-
-
-function startTimer(){
-
-
-timer=setInterval(()=>{
-
-
-time--;
-
-
-document.getElementById("timer").innerText=
-"⏱ "+time+"초";
-
-
-if(time<=0){
-
-endGame();
-
-}
-
-
-},1000);
-
-
-}
-
-
-
-
-function slap(){
-
-
-if(!playing)return;
-
-
-
-if(!audioCtx){
-
-audioCtx=new AudioContext();
-
-}
-
-
-if(audioCtx.state==="suspended"){
-
-audioCtx.resume();
-
-}
-
-
-
-if(ready){
-
-ready=false;
-
-startTimer();
-
-}
-
-
-
-score++;
-combo++;
-
-
-if(combo%10===0){
-
-score+=5;
-
-}
-
-
-
-document.getElementById("score").innerText=score;
-
-document.getElementById("combo").innerText=combo;
-
-
-
-let face=document.getElementById("character");
-
-let effect=document.getElementById("effect");
-
-
-
-face.innerText="😵";
-
-
-face.classList.remove("shake");
-
-void face.offsetWidth;
-
-face.classList.add("shake");
-
-
-
-effect.innerText=
-combo%10===0?
-"🔥 콤보!":
-"👋 찰싹!";
-
-
-sound();
-
-
-
-setTimeout(()=>{
-
-face.innerText="😐";
-
-effect.innerText="";
-
-},150);
-
-
-
-}
-
-
-
-
-function sound(){
-
-
-let buffer=
-audioCtx.createBuffer(
-1,
-audioCtx.sampleRate*0.08,
-audioCtx.sampleRate
-);
-
-
-
-let data=buffer.getChannelData(0);
-
-
-
-for(let i=0;i<data.length;i++){
-
-data[i]=(Math.random()*2-1)
-*(1-i/data.length);
-
-}
-
-
-
-let source=
-audioCtx.createBufferSource();
-
-
-let gain=
-audioCtx.createGain();
-
-
-
-source.buffer=buffer;
-
-gain.gain.value=.5;
-
-
-source.connect(gain);
-
-gain.connect(audioCtx.destination);
-
-
-source.start();
-
-
-}
-
-
-
-
-// 터치/마우스 꾹 방지
-
-let btn=document.getElementById("slapButton");
-
-
-btn.addEventListener("pointerdown",()=>{
-
-if(pressed)return;
-
-pressed=true;
-
-slap();
-
-});
-
-
-document.addEventListener("pointerup",()=>{
-
-pressed=false;
-
-});
-
-
-
-// 키보드
-
-document.addEventListener("keydown",e=>{
-
-
-if(pressed)return;
-
-
-if(
-e.key===" "||
-e.key==="Enter"||
-e.key==="Tab"
-){
-
-e.preventDefault();
-
-pressed=true;
-
-slap();
-
-}
-
-
-});
-
-
-document.addEventListener("keyup",e=>{
-
-
-if(
-e.key===" "||
-e.key==="Enter"||
-e.key==="Tab"
-){
-
-pressed=false;
-
-}
-
-});
-
-
-
-
-
-async function endGame() {
-  playing = false;
-  ready = false;
-  clearInterval(timer);
-
-  if (score > best) {
-    best = score;
-    
-    // [기존 기능] 내 컴퓨터에 저장하고 화면에 점수 보여주기 (유지)
-    localStorage.setItem("bestSlap", best);
-    document.getElementById("bestScore").innerText = best;
-    
-    // [새 기능] 이름 입력받아서 인터넷(Supabase)에 저장하기 (추가)
-    const playerName = prompt("최고 기록 달성! 이름을 적어주세요:", "플레이어");
-    if (playerName) {
-      await supabase
-        .from('leaderboard')
-        .insert([{ name: playerName, score: best }]);
-        
-      alert("인터넷 랭킹 등록 완료!");
-    }
-  }
-}
-
-
-
-
-document.getElementById("timer").innerText=
-"⏰ 종료";
-
-
-alert(
-"게임 끝!\n점수: "+score+"점"
-);
-
-// 1. 화면 오른쪽에 랭킹판을 만들어 붙이는 기능
+// 랭킹판 화면에 미리 생성
 const rankBox = document.createElement("div");
 rankBox.innerHTML = `
   <div style="position: fixed; top: 20px; right: 20px; width: 260px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: left; z-index: 9999;">
@@ -504,17 +136,12 @@ rankBox.innerHTML = `
 `;
 document.body.appendChild(rankBox);
 
-// 1. 진짜 내 Supabase 주소와 키값 설정
-const SUPABASE_URL = "https://supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_LFUFgr0wXmGipUiJOLcmCQ_W0pLOyEm";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-
 // 2. 인터넷(Supabase)에서 점수를 가져와서 랭킹판에 채워 넣는 기능
 async function loadLeaderboard() {
   const rankingList = document.getElementById("ranking-list");
   const { data, error } = await supabase
-    .from('scores')
-    .select('nickname, score')
+    .from('leaderboard') // 테이블 이름을 'leaderboard'로 통일
+    .select('name, score') // 컬럼 이름을 'name', 'score'로 통일
     .order('score', { ascending: false })
     .limit(5);
 
@@ -524,24 +151,121 @@ async function loadLeaderboard() {
   }
 
   rankingList.innerHTML = "";
+  if (!data || data.length === 0) {
+    rankingList.innerHTML = "<li style='padding: 10px 0; font-size: 14px;'>등록된 기록이 없습니다.</li>";
+    return;
+  }
+
   data.forEach((player, index) => {
     rankingList.innerHTML += `
       <li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 16px; display: flex; justify-content: space-between;">
-        <span>${index + 1}등. <strong>${player.nickname}</strong></span>
+        <span>${index + 1}등. <strong>${player.name}</strong></span>
         <span>${player.score}점</span>
       </li>`;
   });
 }
 
-// 3. 게임이 켜지자마자 순위표를 실행합니다
+// 시작하자마자 순위표 불러오기
 loadLeaderboard();
 
+function startGame(){
+  if (playing) return;
+  score = 0;
+  combo = 0;
+  time = 30;
+  playing = true;
+  ready = true;
 
+  document.getElementById("score").innerText = 0;
+  document.getElementById("combo").innerText = 0;
+  document.getElementById("timer").innerText = "⏸ 첫 따귀를 누르세요";
 
+  clearInterval(timer);
+}
 
+function startTimer(){
+  timer = setInterval(()=>{
+    time--;
+    document.getElementById("timer").innerText = "⏱ " + time + "초";
 
-</script>
+    if(time <= 0){
+      endGame();
+    }
+  }, 1000);
+}
 
+function slap(){
+  if(!playing) return;
 
-</body>
-</html>
+  if(!audioCtx){
+    audioCtx = new AudioContext();
+  }
+
+  if(audioCtx.state === "suspended"){
+    audioCtx.resume();
+  }
+
+  if(ready){
+    ready = false;
+    startTimer();
+  }
+
+  score++;
+  combo++;
+
+  if(combo % 10 === 0){
+    score += 5;
+  }
+
+  document.getElementById("score").innerText = score;
+  document.getElementById("combo").innerText = combo;
+
+  let face = document.getElementById("character");
+  let effect = document.getElementById("effect");
+
+  face.innerText = "😵";
+  face.classList.remove("shake");
+  void face.offsetWidth;
+  face.classList.add("shake");
+
+  effect.innerText = combo % 10 === 0 ? "🔥 콤보!" : "👋 찰싹!";
+
+  sound();
+
+  setTimeout(()=>{
+    face.innerText = "😐";
+    effect.innerText = "";
+  }, 150);
+}
+
+function sound(){
+  let buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.08, audioCtx.sampleRate);
+  let data = buffer.getChannelData(0);
+
+  for(let i = 0; i < data.length; i++){
+    data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+  }
+
+  let source = audioCtx.createBufferSource();
+  let gain = audioCtx.createGain();
+
+  source.buffer = buffer;
+  gain.gain.value = .5;
+  source.connect(gain);
+  gain.connect(audioCtx.destination);
+  source.start();
+}
+
+// 터치/마우스 이벤트
+let btn = document.getElementById("slapButton");
+btn.addEventListener("pointerdown",()=>{
+  if(pressed) return;
+  pressed = true;
+  slap();
+});
+
+document.addEventListener("pointerup",()=>{
+  pressed = false;
+});
+
+// 키보드 이벤트
