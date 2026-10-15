@@ -137,7 +137,7 @@ let best = localStorage.getItem("bestSlap") || 0;
 document.getElementById("bestScore").innerText = best;
 
 // 랭킹판 UI 생성 및 부착
-```js
+
 const rankBox = document.createElement("div");
 rankBox.innerHTML = `
   <style>
@@ -179,7 +179,7 @@ rankBox.innerHTML = `
   </div>
 `;
 document.body.appendChild(rankBox);
-```
+
 
 // 랭킹 데이터 불러오기 함수
 async function loadLeaderboard() {
