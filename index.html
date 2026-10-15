@@ -176,10 +176,12 @@ async function loadLeaderboard() {
     item.textContent =
       (index + 1) + "등. " + player.nickname + " — " +
       player.score + "점";
-    rankingList.appendChild(item);
+       rankingList.appendChild(item);
   });
+}
 
-
+// 시작하자마자 랭킹 로드
+loadLeaderboard();
 // 시작하자마자 랭킹 로드
 loadLeaderboard();
 
