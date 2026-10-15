@@ -137,16 +137,49 @@ let best = localStorage.getItem("bestSlap") || 0;
 document.getElementById("bestScore").innerText = best;
 
 // 랭킹판 UI 생성 및 부착
+```js
 const rankBox = document.createElement("div");
 rankBox.innerHTML = `
-  <div style="position: fixed; top: 20px; right: 20px; width: 260px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: left; z-index: 9999;">
-    <h3 style="margin-top: 0; color: #ff4757; font-size: 20px; border-bottom: 2px solid #ff7882; padding-bottom: 8px;">🏆 실시간 랭킹 (TOP 5)</h3>
-    <ul id="ranking-list" style="list-style: none; padding: 0; margin: 0;">
-      <li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 16px;">순위 로딩 중...</li>
+  <style>
+    #rank-panel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 260px;
+      max-height: 70vh;
+      overflow-y: auto;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      text-align: left;
+      z-index: 9999;
+    }
+
+    @media (max-width: 600px) {
+      #rank-panel {
+        position: static;
+        width: 100%;
+        max-height: 250px;
+        margin: 20px auto;
+        box-sizing: border-box;
+      }
+    }
+  </style>
+
+  <div id="rank-panel">
+    <h3 style="margin-top:0; color:#ff4757; font-size:20px;
+      border-bottom:2px solid #ff7882; padding-bottom:8px;">
+      🏆 실시간 랭킹 TOP 5
+    </h3>
+    <ul id="ranking-list"
+      style="list-style:none; padding:0; margin:0;">
+      <li>순위 로딩 중...</li>
     </ul>
   </div>
 `;
 document.body.appendChild(rankBox);
+```
 
 // 랭킹 데이터 불러오기 함수
 async function loadLeaderboard() {
