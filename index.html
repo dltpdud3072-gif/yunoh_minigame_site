@@ -324,12 +324,32 @@ async function endGame() {
   const playerName = prompt("랭킹에 등록할 닉네임을 입력해 주세요:");
 
   if (playerName && playerName.trim()) {
-    const { error } = await supabaseClient
+   const nickname = playerName.trim().slice(0, 20);
+
+const { data: oldData, error: findError } = await supabaseClient
+  .from("scores")
+  .select("id, score")
+  .eq("nickname", nickname)
+  .maybeSingle();
+
+let error = findError;
+
+if (!error && oldData) {
+  if (score > oldData.score) {
+    const result = await supabaseClient
       .from("scores")
-      .insert({
-        nickname: playerName.trim().slice(0, 20),
-        score: score
-      });
+      .update({ score: score })
+      .eq("id", oldData.id);
+
+    error = result.error;
+  }
+} else if (!error) {
+  const result = await supabaseClient
+    .from("scores")
+    .insert({ nickname: nickname, score: score });
+
+  error = result.error;
+}
 
     if (error) {
       alert("랭킹 등록 실패: " + error.message);
