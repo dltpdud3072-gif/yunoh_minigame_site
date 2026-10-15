@@ -151,31 +151,34 @@ document.body.appendChild(rankBox);
 // 랭킹 데이터 불러오기 함수
 async function loadLeaderboard() {
   const rankingList = document.getElementById("ranking-list");
+
   const { data, error } = await supabaseClient
-    .from('leaderboard')
-    .select('name, score')
-    .order('score', { ascending: false })
-    .limit(5);
+    .from("scores")
+    .select("nickname, score")
+    .order("score", { ascending: false });
 
   if (error) {
-    rankingList.innerHTML = "<li style='padding: 10px 0; color: red; font-size: 14px;'>로딩 실패 (테이블 확인 필요)</li>";
+    rankingList.textContent = "랭킹 로딩 실패: " + error.message;
     return;
   }
 
-  rankingList.innerHTML = "";
+  rankingList.replaceChildren();
+
   if (!data || data.length === 0) {
-    rankingList.innerHTML = "<li style='padding: 10px 0; font-size: 14px;'>등록된 기록이 없습니다.</li>";
+    rankingList.textContent = "아직 등록된 기록이 없습니다.";
     return;
   }
 
   data.forEach((player, index) => {
-    rankingList.innerHTML += `
-      <li style="padding: 10px 0; border-bottom: 1px solid #eee; font-size: 16px; display: flex; justify-content: space-between;">
-        <span>${index + 1}등. <strong>${player.name}</strong></span>
-        <span>${player.score}점</span>
-      </li>`;
+    const item = document.createElement("li");
+    item.style.padding = "10px 0";
+    item.style.borderBottom = "1px solid #eee";
+    item.textContent =
+      (index + 1) + "등. " + player.nickname + " — " +
+      player.score + "점";
+    rankingList.appendChild(item);
   });
-}
+
 
 // 시작하자마자 랭킹 로드
 loadLeaderboard();
@@ -314,19 +317,23 @@ async function endGame() {
     best = score;
     localStorage.setItem("bestSlap", best);
     document.getElementById("bestScore").innerText = best;
-    
-    const playerName = prompt("최고 기록 달성! 이름을 적어주세요:", "플레이어");
-    if (playerName) {
-      const { error } = await supabaseClient
-        .from('leaderboard')
-        .insert([{ name: playerName, score: best }]);
-        
-      if (error) {
-        alert("랭킹 등록 실패: " + error.message);
-      } else {
-        alert("인터넷 랭킹 등록 완료!");
-        loadLeaderboard(); // 랭킹 목록 새로고침
-      }
+  }
+
+  const playerName = prompt("랭킹에 등록할 닉네임을 입력해 주세요:");
+
+  if (playerName && playerName.trim()) {
+    const { error } = await supabaseClient
+      .from("scores")
+      .insert({
+        nickname: playerName.trim().slice(0, 20),
+        score: score
+      });
+
+    if (error) {
+      alert("랭킹 등록 실패: " + error.message);
+    } else {
+      await loadLeaderboard();
+      alert("랭킹 등록 완료!");
     }
   }
 
